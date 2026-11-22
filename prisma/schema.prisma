@@ -1,0 +1,154 @@
+// OneAtlas data model
+//
+// Lab       -> the company / research group that BUILDS a model (OpenAI, Meta, Mistral...)
+// Provider  -> a platform that SERVES a model over an API (Together, Groq, Bedrock...)
+// Model     -> one AI model, owned by exactly one Lab
+// ModelOffering -> join table Model <-> Provider. Holds per-provider pricing and
+//                  performance, because the same model costs different amounts on
+//                  different providers.
+// Benchmark / BenchmarkScore -> leaderboard data. One score per (model, benchmark).
+
+generator client {
+  provider   = "prisma-client-js"
+  // Rust-free client: queries are compiled in WASM and executed through the
+  // `pg` driver adapter. Smaller bundle and faster cold starts on serverless.
+  engineType = "client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ModelType {
+  CHAT
+  REASONING
+  CODE
+  EMBEDDING
+  IMAGE_GENERATION
+  SPEECH
+  MULTIMODAL
+}
+
+enum BenchmarkCategory {
+  KNOWLEDGE
+  REASONING
+  CODING
+  MATH
+  MULTIMODAL
+  HUMAN_PREFERENCE
+}
+
+model Lab {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String
+  website     String
+  headquarters String
+  foundedYear Int
+  brandColor  String   @default("#6366f1")
+  models      Model[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Provider {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  name        String
+  description String
+  website     String
+  // e.g. "first-party", "aggregator", "inference-cloud", "hyperscaler"
+  kind        String
+  offerings   ModelOffering[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model Model {
+  id               String    @id @default(cuid())
+  slug             String    @unique
+  name             String
+  description      String
+  type             ModelType
+  labId            String
+  lab              Lab       @relation(fields: [labId], references: [id], onDelete: Cascade)
+  releaseDate      DateTime
+  contextWindow    Int // tokens
+  maxOutputTokens  Int?
+  parameterCount   String? // "70B", "8x22B" - free text, often undisclosed
+  openWeights      Boolean   @default(false)
+  license          String?
+  knowledgeCutoff  String?
+  inputModalities  String[] // text, image, audio, video, file
+  outputModalities String[]
+  capabilities     String[] // tool-calling, json-mode, vision, reasoning ...
+
+  // Denormalized read fields. Prisma cannot ORDER BY MIN() over a relation,
+  // and "sort by cheapest price" is the most common sort on the explorer, so
+  // the ingestion pipeline recomputes these every time offerings change.
+  minInputPrice    Decimal?  @db.Decimal(12, 4) // USD per 1M input tokens
+  minOutputPrice   Decimal?  @db.Decimal(12, 4) // USD per 1M output tokens
+  providerCount    Int       @default(0)
+  // Average of min-max normalized benchmark scores (0-100). Used for rankings.
+  atlasScore       Float?
+
+  offerings        ModelOffering[]
+  scores           BenchmarkScore[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([labId])
+  @@index([type])
+  @@index([releaseDate])
+  @@index([contextWindow])
+  @@index([minInputPrice])
+  @@index([atlasScore])
+}
+
+model ModelOffering {
+  id                String   @id @default(cuid())
+  modelId           String
+  providerId        String
+  model             Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  provider          Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  inputPrice        Decimal  @db.Decimal(12, 4) // USD per 1M tokens (normalized unit)
+  outputPrice       Decimal  @db.Decimal(12, 4)
+  cachedInputPrice  Decimal? @db.Decimal(12, 4)
+  // Some providers cap context lower than the model's native window.
+  contextWindow     Int
+  throughputTps     Float? // output tokens / second
+  latencyMs         Int? // time to first token
+  uptimePct         Float?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([modelId, providerId])
+  @@index([providerId])
+}
+
+model Benchmark {
+  id             String            @id @default(cuid())
+  slug           String            @unique
+  name           String
+  description    String
+  category       BenchmarkCategory
+  unit           String            @default("%") // "%" or "elo"
+  higherIsBetter Boolean           @default(true)
+  scores         BenchmarkScore[]
+}
+
+model BenchmarkScore {
+  id          String    @id @default(cuid())
+  modelId     String
+  benchmarkId String
+  model       Model     @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  benchmark   Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+  score       Float
+  source      String?
+
+  @@unique([modelId, benchmarkId])
+  @@index([benchmarkId, score])
+}

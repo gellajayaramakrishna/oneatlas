@@ -1,0 +1,16 @@
+import type { RawLab } from "../../src/server/ingest/schemas";
+
+export const labs: RawLab[] = [
+  { slug: "openai", name: "OpenAI", description: "Research and deployment company behind the GPT and o-series models, gpt-oss open-weight models, and image and speech models.", website: "https://openai.com", headquarters: "San Francisco, USA", founded: 2015, color: "#10a37f" },
+  { slug: "anthropic", name: "Anthropic", description: "AI safety company building the Claude family of models, focused on reliable, steerable systems for coding and agentic work.", website: "https://www.anthropic.com", headquarters: "San Francisco, USA", founded: 2021, color: "#d97757" },
+  { slug: "google", name: "Google DeepMind", description: "Google's AI research lab. Builds the Gemini multimodal models, the open Gemma family, and embedding models.", website: "https://deepmind.google", headquarters: "London, UK", founded: 2010, color: "#4285f4" },
+  { slug: "meta", name: "Meta AI", description: "Meta's AI division. Publishes the open-weight Llama family used across the open-source ecosystem.", website: "https://ai.meta.com", headquarters: "Menlo Park, USA", founded: 2013, color: "#0866ff" },
+  { slug: "mistral", name: "Mistral AI", description: "European lab shipping efficient open and commercial models, including Mistral Medium, Codestral and Magistral.", website: "https://mistral.ai", headquarters: "Paris, France", founded: 2023, color: "#fa520f" },
+  { slug: "deepseek", name: "DeepSeek", description: "Research lab known for highly cost-efficient open-weight MoE models such as DeepSeek-V3 and the R1 reasoning series.", website: "https://www.deepseek.com", headquarters: "Hangzhou, China", founded: 2023, color: "#4d6bfe" },
+  { slug: "qwen", name: "Alibaba Qwen", description: "Alibaba Cloud's Qwen team. Releases a broad open-weight family covering chat, coding and vision-language models.", website: "https://qwenlm.github.io", headquarters: "Hangzhou, China", founded: 2023, color: "#615ced" },
+  { slug: "xai", name: "xAI", description: "Builds the Grok models, with an emphasis on reasoning and real-time information.", website: "https://x.ai", headquarters: "Palo Alto, USA", founded: 2023, color: "#111111" },
+  { slug: "cohere", name: "Cohere", description: "Enterprise-focused lab building Command models for RAG and tool use, plus Embed and Rerank models.", website: "https://cohere.com", headquarters: "Toronto, Canada", founded: 2019, color: "#39594d" },
+  { slug: "microsoft", name: "Microsoft Research", description: "Publishes the Phi family of small language models that punch above their size.", website: "https://www.microsoft.com/en-us/research", headquarters: "Redmond, USA", founded: 1991, color: "#00a4ef" },
+  { slug: "amazon", name: "Amazon AGI", description: "Amazon's foundation model team behind the Nova family, available through AWS Bedrock.", website: "https://aws.amazon.com/ai/generative-ai/nova/", headquarters: "Seattle, USA", founded: 2023, color: "#ff9900" },
+  { slug: "moonshot", name: "Moonshot AI", description: "Creator of the Kimi models, including the trillion-parameter open-weight Kimi K2 built for agentic tasks.", website: "https://www.moonshot.ai", headquarters: "Beijing, China", founded: 2023, color: "#1f2937" },
+];
