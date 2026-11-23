@@ -4,7 +4,7 @@ An AI model discovery and intelligence platform. You can browse, search, filter,
 
 Built for the OneAtlas AI Software Engineer Internship task, **Full Stack role**.
 
-- **Live:** `https://oneatlas-jade.vercel.app/`
+- **Live:** https://oneatlas-jade.vercel.app/
 - **Stack:** Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS · PostgreSQL · Prisma 6 · Zod · Vitest
 
 ---
